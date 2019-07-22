@@ -3,6 +3,7 @@ using iTextSharp.text.html.simpleparser;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.draw;
 using iTextSharp.text.pdf.parser;
+using PdfCutterService.DAL;
 using Pechkin;
 using Pechkin.Synchronized;
 using Spire.Pdf;
@@ -35,6 +36,9 @@ namespace PdfCutterService
 
         public void ExtractDifferentPdf()
         {
+            MT202Gateway mT202Gateway = new MT202Gateway();
+            mT202Gateway.InsertSEBL_M202_MASTER_INFO("1335180506801", "BP32588B80228304", "31/03/2019",null,"a@m.com",null,"C://");
+
             string type = "*.pdf";
             //MT700
             ExtractMT700Pdf(type, "MT700", "Message Header", "End of Message");
@@ -55,18 +59,18 @@ namespace PdfCutterService
                     Directory.CreateDirectory(outputPdfPath);
 
                 List<string> inputPdfList = this.GetFileList(type, inputPdfPath);
-                //List<string> processedPdfList = this.GetFileList(type, processedPdfPath).Select(s => s.Substring(0,s.IndexOf(" Processed at"))).ToList();
-
+                List<string> processedPdfList =
+                    this.GetFileList(type, processedPdfPath).Select(s => s.Substring(0, s.IndexOf(" Processed at") == -1 ? s.Length : s.IndexOf(" Processed at"))).ToList();
 
 
                 foreach (string pdfFile in inputPdfList)
                 {
 
                     string inputFileName = pdfFile.Replace(inputPdfPath, processedPdfPath);
-                     //if (processedPdfList.Contains(inputFileName))
-                     //   continue;
+                    if (processedPdfList.Contains(inputFileName))
+                        continue;
 
-                    
+
 
                     string textContent = this.ReadPdfFile(pdfFile);
                     if (projectNm == "MT700" && !textContent.Contains("FIN 700"))
@@ -83,6 +87,10 @@ namespace PdfCutterService
                         string outputFileName = this.GetSubstring(content, "Documentary Credit Number", @"F31C:").Replace("<br>", "").Trim();
                         
                         string outputFileFullPath = @outputPdfPath + "\\" + @outputFileName + "@0.pdf";
+
+                        if (File.Exists(outputFileFullPath))
+                            continue;
+
                         if (content.IndexOf("Page") != -1)
                         {
                             //find page number of Message Header
@@ -109,7 +117,7 @@ namespace PdfCutterService
                     if (!Directory.Exists(processedPdfPath))
                         Directory.CreateDirectory(processedPdfPath);
 
-
+                    if(contentList.Count>0)
                     File.Move(pdfFile, inputFileName + projectNm+" Processed at " + DateTime.Now.ToString("dd MMMM yyyy HH.mm.ss") + ".pdf");
 
 
@@ -136,7 +144,8 @@ namespace PdfCutterService
                     Directory.CreateDirectory(outputPdfPath);
 
                 List<string> inputPdfList = this.GetFileList(type, inputPdfPath);
-                //List<string> processedPdfList = this.GetFileList(type, processedPdfPath).Select(s => s.Substring(0, s.IndexOf(" Processed at"))).ToList();
+                List<string> processedPdfList = 
+                    this.GetFileList(type, processedPdfPath).Select(s => s.Substring(0, s.IndexOf(" Processed at")==-1?s.Length: s.IndexOf(" Processed at"))).ToList();
 
 
 
@@ -144,8 +153,8 @@ namespace PdfCutterService
                 {
 
                     string inputFileName = pdfFile.Replace(inputPdfPath, processedPdfPath);
-                    //if (processedPdfList.Contains(inputFileName))
-                    //    continue;
+                    if (processedPdfList.Contains(inputFileName))
+                        continue;
 
                     string textContent = this.ReadPdfFile(pdfFile);
                     if (projectNm == "MT202" && !textContent.Contains("fin.202"))
@@ -161,6 +170,9 @@ namespace PdfCutterService
                         string bl_ref = this.GetSubstring(content, "Related Reference:", "Priority:").Replace("<br>", "").Trim();
                         string outputFileName = lc_no.Replace("/", "(slash)") + "@" + bl_ref.Replace("/", "(slash)");
                         string outputFileFullPath = @outputPdfPath + "\\" + @outputFileName + "@0.pdf";
+
+                        if (File.Exists(outputFileFullPath))
+                            continue;
 
                         if (content.IndexOf("Page") != -1)
                         {
@@ -188,15 +200,15 @@ namespace PdfCutterService
                     if (!Directory.Exists(processedPdfPath))
                         Directory.CreateDirectory(processedPdfPath);
 
-
-                    File.Move(pdfFile, inputFileName+" _MT202 Processed at "+DateTime.Now.ToString("dd MMMM yyyy HH.mm.ss")+".pdf");
+                    if(contentList.Count>0)
+                       File.Move(pdfFile, inputFileName+" _MT202 Processed at "+DateTime.Now.ToString("dd MMMM yyyy HH.mm.ss")+".pdf");
 
 
                 }
             }
             catch (Exception ex)
             {
-                this.SendMail("MT700 Error Message:\n" + ex.Message, "MT700 Service Alert");
+                this.SendMail("MT202 Error Message:\n" + ex.Message, "MT202 Service Alert");
                 throw ex;
             }
 

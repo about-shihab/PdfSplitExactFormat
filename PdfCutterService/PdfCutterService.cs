@@ -23,6 +23,7 @@ namespace PdfCutterService
         }
         public void OnDebug()
         {
+
             pdfManager.ExtractDifferentPdf();
 
             OnStart(null);
