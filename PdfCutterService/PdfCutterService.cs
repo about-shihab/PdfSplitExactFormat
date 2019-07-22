@@ -23,10 +23,10 @@ namespace PdfCutterService
         }
         public void OnDebug()
         {
-            string type = "*.pdf";
-            pdfManager.ExtractPdf(type);
+            pdfManager.ExtractDifferentPdf();
 
             OnStart(null);
+
         }
         protected override void OnStart(string[] args)
         {
@@ -34,6 +34,7 @@ namespace PdfCutterService
 
             pdfManager.WriteToFile("\n -------------------------------------------------------------------------------------------------\n");
             pdfManager.WriteToFile("Pdf Split Service started {0}");
+            pdfManager.SendMail("PdfSplit Service is started", "PdfSplit Service Alert");
 
             
 
@@ -42,8 +43,8 @@ namespace PdfCutterService
 
         protected override void OnStop()
         {
-            pdfManager.SendMail("MT700 Service has been Stopped", "MT700 Service Alert");
-            pdfManager.WriteToFile("Pdf Split Service stopped {0}\n");
+            pdfManager.SendMail("PdfSplit Service has been Stopped", "PdfSplit Service Alert");
+            pdfManager.WriteToFile("PdfSplit Service has been Stopped {0}\n");
             this.Schedular.Dispose();
         }
 
@@ -106,8 +107,8 @@ namespace PdfCutterService
 
             try
             {
-                string type = "*.pdf";
-                pdfManager.ExtractPdf(type);
+                
+                pdfManager.ExtractDifferentPdf();
 
                 this.ScheduleService();
             }

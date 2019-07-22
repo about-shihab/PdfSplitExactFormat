@@ -92,6 +92,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DAL\MT202Gateway.cs" />
     <Compile Include="PageEventHelper.cs" />
     <Compile Include="PdfManager.cs" />
     <Compile Include="ProjectInstaller.cs">
